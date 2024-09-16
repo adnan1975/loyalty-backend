@@ -254,7 +254,7 @@ def login_user():
             # Fetch user data (e.g., points and QR code)
             cur.execute(
                 "SELECT points, qr_code FROM users WHERE id = %s",
-                (user_id,)
+                (user_id)
             )
             user_data = cur.fetchone()
             if user_data is None:
