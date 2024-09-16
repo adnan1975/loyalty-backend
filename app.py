@@ -44,8 +44,7 @@ def register_user():
     )
     user_id = cur.fetchone()[0]
     conn.commit()
-    cur.close()
-    conn.close()
+    
     user_id = cur.fetchone()[0]
 
     # Format data for QR code
@@ -80,9 +79,12 @@ def register_user():
         (qr_code_base64, user_id)
     )
     conn.commit()
-    cur.close()
-    conn.close()
-
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+    
     return jsonify({"user_id": user_id, "qr_code": f"data:image/png;base64,{qr_code_base64}"}), 201
 
 
