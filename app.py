@@ -1,5 +1,9 @@
 from flask import Flask, request, jsonify
 import psycopg2
+import secrets
+import qrcode
+from io import BytesIO
+import base64
 
 
 app = Flask(__name__)
@@ -41,10 +45,33 @@ def register_user():
     cur.close()
     conn.close()
 
-    # Generate a QR code for the user (implementation not shown here)
-    qr_code = "generated_qr_code_url"
+   # Format data for QR code
+    qr_data = {
+        "user_id": user_id,
+        "phone": phone,
+        "email": email
+    }
+    
+    # Convert dictionary to JSON string
+    qr_data_json = json.dumps(qr_data)
 
-    return jsonify({"user_id": user_id, "qr_code": qr_code}), 201
+    # Generate QR code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(qr_data_json)
+    qr.make(fit=True)
+    img = qr.make_image(fill='black', back_color='white')
+
+    # Convert QR code image to base64 for easy embedding in JSON response
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    qr_code_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+    
+    return jsonify({"user_id": user_id, "qr_code": f"data:image/png;base64,{qr_code_base64}"}), 201
 
 @app.route('/add_points/<int:user_id>', methods=['POST'])
 def add_points(user_id):
