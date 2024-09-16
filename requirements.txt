@@ -3,4 +3,3 @@ Gunicorn
 psycopg2-binary
 qrcode[pil]
 jwt
-pyjwt==2.9.1
