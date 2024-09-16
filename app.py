@@ -204,7 +204,7 @@ def reset_database():
 if __name__ == '__main__':
     app.run(debug=True)
 
-@app.route('/api/user/<int:user_id>', methods=['GET'])
+@app.route('/user/<int:user_id>', methods=['GET'])
 def get_user(user_id):
     conn = get_db_connection()
     cur = conn.cursor()
