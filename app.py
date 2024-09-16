@@ -37,48 +37,50 @@ def register_user():
 
 
     conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO users (name, phone, email, points, password) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-        (name, phone, email, 100, placeholder_password)
-    )
-    user_id = cur.fetchone()[0]
-    conn.commit()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO users (name, phone, email, points, password) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+            (name, phone, email, 100, placeholder_password)
+        )
+        user_id = cur.fetchone()[0]
+        conn.commit()
+        
+        user_id = cur.fetchone()[0]
+
+        # Format data for QR code
+        qr_data = {
+            "user_id": user_id,
+            "phone": phone,
+            "email": email
+        }
+        
+        # Convert dictionary to JSON string
+        qr_data_json = json.dumps(qr_data)
+
+        # Generate QR code
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(qr_data_json)
+        qr.make(fit=True)
+        img = qr.make_image(fill='black', back_color='white')
+
+        # Convert QR code image to base64
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        qr_code_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+        # Store QR code in the database
+        cur.execute(
+            "UPDATE users SET qr_code = %s WHERE id = %s",
+            (qr_code_base64, user_id)
+        )
+        conn.commit()
     
-    user_id = cur.fetchone()[0]
-
-    # Format data for QR code
-    qr_data = {
-        "user_id": user_id,
-        "phone": phone,
-        "email": email
-    }
-    
-    # Convert dictionary to JSON string
-    qr_data_json = json.dumps(qr_data)
-
-    # Generate QR code
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(qr_data_json)
-    qr.make(fit=True)
-    img = qr.make_image(fill='black', back_color='white')
-
-    # Convert QR code image to base64
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    qr_code_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
-
-    # Store QR code in the database
-    cur.execute(
-        "UPDATE users SET qr_code = %s WHERE id = %s",
-        (qr_code_base64, user_id)
-    )
-    conn.commit()
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 500
