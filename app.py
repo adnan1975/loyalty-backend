@@ -234,19 +234,19 @@ def login_user():
     data = request.json
     phone = data.get('phone')
     if not phone :
-        return jsonify({"error": "Phone number and password are required"}), 400
+        return jsonify({"error": "Phone number   is required"}), 400
 
     conn = get_db_connection()
 
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT id, password FROM users WHERE phone = %s",
+                "SELECT id FROM users WHERE phone = %s",
                 (phone,)
             )
             result = cur.fetchone()
             if result is None:
-                return jsonify({"error": "Invalid phone number or password"}), 401
+                return jsonify({"error": "Invalid phone number"}), 401
             
             user_id = result
 
