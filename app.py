@@ -198,3 +198,28 @@ def reset_database():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+@app.route('/api/user/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT id, name, phone, email, qr_code FROM users WHERE id = %s",
+        (user_id,)
+    )
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+
+    user_data = {
+        "user_id": user[0],
+        "name": user[1],
+        "phone": user[2],
+        "email": user[3],
+        "qr_code": f"data:image/png;base64,{user[4]}"
+    }
+
+    return jsonify(user_data), 200
