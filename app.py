@@ -7,6 +7,7 @@ import base64
 import json  # Ensure you import json for data serialization
 import jwt
 import os
+import datetime
 
 
 
@@ -245,6 +246,13 @@ def get_user_data():
         return jsonify({"error": "Invalid token"}), 401
 
 
+def generate_token(user_id):
+    payload = {
+        'user_id': user_id,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token expiry time
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+    return token
 
 @app.route('/login', methods=['POST'])
 def login_user():
@@ -284,8 +292,5 @@ def login_user():
     finally:
         conn.close()
 
-    return jsonify({
-        "user_id": user_id,
-        "points": points,
-        "qr_code": qr_code
-    }), 200
+    token = generate_token(user_id)
+    return jsonify({'token': token}), 200

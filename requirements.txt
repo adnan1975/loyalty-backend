@@ -3,3 +3,4 @@ Gunicorn
 psycopg2-binary
 qrcode[pil]
 pyjwt
+datetime
