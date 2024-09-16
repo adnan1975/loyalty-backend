@@ -17,7 +17,6 @@ def get_db_connection():
     conn = psycopg2.connect(**DB_PARAMS)
     return conn
 
-const crypto = require('crypto')
     
 @app.route('/register', methods=['POST'])
 def register_user():
@@ -25,7 +24,7 @@ def register_user():
     name = data.get('name')
     phone = data.get('phone')
     email = data.get('email')
-    const placeholderPassword = crypto.randomBytes(16).toString('hex')
+    placeholder_password = secrets.token_hex(16)
 
     if not name or not phone:
         return jsonify({"error": "Name and phone number are required"}), 400
