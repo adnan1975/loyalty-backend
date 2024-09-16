@@ -206,8 +206,6 @@ def reset_database():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(debug=True)
 
 @app.route('/user', methods=['GET'])
 def get_user_data():
@@ -226,7 +224,7 @@ def get_user_data():
         with conn.cursor() as cur:
             cur.execute(
                 "SELECT points, qr_code FROM users WHERE id = %s",
-                (user_id,)
+                (user_id)
             )
             user_data = cur.fetchone()
             if user_data is None:
@@ -294,3 +292,6 @@ def login_user():
 
     token = generate_token(user_id)
     return jsonify({'token': token}), 200
+
+if __name__ == '__main__':
+    app.run(debug=True)
