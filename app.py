@@ -17,7 +17,7 @@ def get_db_connection():
     conn = psycopg2.connect(**DB_PARAMS)
     return conn
 
-const crypto = require('crypto');
+const crypto = require('crypto')
     
 @app.route('/register', methods=['POST'])
 def register_user():
@@ -25,8 +25,7 @@ def register_user():
     name = data.get('name')
     phone = data.get('phone')
     email = data.get('email')
-    const placeholderPassword = crypto.randomBytes(16).toString('hex');  // 32-character random password
-
+    const placeholderPassword = crypto.randomBytes(16).toString('hex')
 
     if not name or not phone:
         return jsonify({"error": "Name and phone number are required"}), 400
@@ -36,7 +35,7 @@ def register_user():
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO users (name, phone, email, points, password) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-        (name, phone, email, 0, placeholderPassword)
+        (name, phone, email, 100, placeholderPassword)
     )
     user_id = cur.fetchone()[0]
     conn.commit()
