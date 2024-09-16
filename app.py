@@ -1,16 +1,15 @@
 from flask import Flask, request, jsonify
 import psycopg2
-from psycopg2 import sql
 
 app = Flask(__name__)
 
 # Database connection parameters
 DB_PARAMS = {
-    'dbname': 'your_database_name',
-    'user': 'your_username',
-    'password': 'your_password',
-    'host': 'your_host',
-    'port': 'your_port'
+    'dbname': 'loyaltydb_uqqa',
+    'user': 'appuser',
+    'password': 'E6aWZbAlVha6VCfd0pBzNezR3bW8sAQP',
+    'host': 'dpg-crjp5kjtq21c73a4kcm0-a',
+    'port': '5432'
 }
 
 def get_db_connection():
@@ -85,6 +84,15 @@ def redeem_reward(user_id):
     conn.close()
 
     return jsonify({"message": "Reward redeemed successfully"}), 200
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    try:
+        conn = get_db_connection()
+        conn.close()
+        return jsonify({"status": "healthy"}), 200
+    except Exception as e:
+        return jsonify({"status": "unhealthy", "error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
