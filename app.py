@@ -40,7 +40,7 @@ def register_user():
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO users (name, phone, email, points, password) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-        (name, phone, email, 100, placeholderPassword)
+        (name, phone, email, 100, placeholder_password)
     )
     user_id = cur.fetchone()[0]
     conn.commit()
