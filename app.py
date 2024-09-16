@@ -43,7 +43,10 @@ def register_user():
             "INSERT INTO users (name, phone, email, points, password) VALUES (%s, %s, %s, %s, %s) RETURNING id",
             (name, phone, email, 100, placeholder_password)
         )
-        user_id = cur.fetchone()[0]
+        result = cur.fetchone()
+        if result is None:
+            return jsonify({"error": "Failed to retrieve user ID"}), 500
+        user_id = result[0]
         conn.commit()
         
         # Format data for QR code
