@@ -46,7 +46,7 @@ def register_user():
     conn.commit()
     cur.close()
     conn.close()
- user_id = cur.fetchone()[0]
+    user_id = cur.fetchone()[0]
 
     # Format data for QR code
     qr_data = {
