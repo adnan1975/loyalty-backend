@@ -2,3 +2,5 @@ Flask
 Gunicorn
 psycopg2-binary
 qrcode[pil]
+jwt
+os

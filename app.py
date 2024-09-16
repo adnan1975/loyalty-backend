@@ -5,10 +5,14 @@ import qrcode
 from io import BytesIO
 import base64
 import json  # Ensure you import json for data serialization
+import jwt
+import os
 
 
 
 app = Flask(__name__)
+SECRET_KEY = os.getenv('SECRET_KEY', 'your_secret_key')
+
 
 # Database connection parameters
 DB_PARAMS = {
@@ -204,30 +208,43 @@ def reset_database():
 if __name__ == '__main__':
     app.run(debug=True)
 
-@app.route('/user/<int:user_id>', methods=['GET'])
-def get_user(user_id):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute(
-        "SELECT id, name, phone, email, qr_code FROM users WHERE id = %s",
-        (user_id,)
-    )
-    user = cur.fetchone()
-    cur.close()
-    conn.close()
+@app.route('/user', methods=['GET'])
+def get_user_data():
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return jsonify({"error": "Missing token"}), 401
 
-    if user is None:
-        return jsonify({"error": "User not found"}), 404
+    token = auth_header.split(' ')[1]  # Extract the token from the "Bearer <token>" format
 
-    user_data = {
-        "user_id": user[0],
-        "name": user[1],
-        "phone": user[2],
-        "email": user[3],
-        "qr_code": f"data:image/png;base64,{user[4]}"
-    }
+    try:
+        # Decode the token
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded_token['user_id']
 
-    return jsonify(user_data), 200
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT points, qr_code FROM users WHERE id = %s",
+                (user_id,)
+            )
+            user_data = cur.fetchone()
+            if user_data is None:
+                return jsonify({"error": "User data not found"}), 404
+
+            points, qr_code = user_data
+
+        return jsonify({
+            "user_id": user_id,
+            "points": points,
+            "qr_code": qr_code
+        }), 200
+
+    except jwt.ExpiredSignatureError:
+        return jsonify({"error": "Token expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"error": "Invalid token"}), 401
+
+
 
 @app.route('/login', methods=['POST'])
 def login_user():
