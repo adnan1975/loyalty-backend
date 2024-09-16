@@ -228,3 +228,42 @@ def get_user(user_id):
     }
 
     return jsonify(user_data), 200
+
+@app.route('/login', methods=['POST'])
+def login_user():
+    data = request.json
+    phone = data.get('phone')
+    if not phone :
+        return jsonify({"error": "Phone number and password are required"}), 400
+
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT id, password FROM users WHERE phone = %s",
+                (phone,)
+            )
+            result = cur.fetchone()
+            if result is None:
+                return jsonify({"error": "Invalid phone number or password"}), 401
+            
+            user_id, stored_password = result
+
+            
+            # Fetch user data (e.g., points and QR code)
+            cur.execute(
+                "SELECT points, qr_code FROM users WHERE id = %s",
+                (user_id,)
+            )
+            user_data = cur.fetchone()
+            if user_data is None:
+                return jsonify({"error": "User data not found"}), 500
+
+            points, qr_code = user_data
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
