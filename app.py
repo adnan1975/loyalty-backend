@@ -267,3 +267,8 @@ def login_user():
     finally:
         conn.close()
 
+    return jsonify({
+        "user_id": user_id,
+        "points": points,
+        "qr_code": qr_code
+    }), 200
