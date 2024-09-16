@@ -168,7 +168,7 @@ def create_tables():
       password VARCHAR(255) NOT NULL,
       points INTEGER DEFAULT 0,
       marketing_opt_in BOOLEAN DEFAULT FALSE,
-      qr_code TEXT,
+      qr_code TEXT
     );
     """
     
