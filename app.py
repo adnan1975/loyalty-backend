@@ -248,7 +248,7 @@ def login_user():
             if result is None:
                 return jsonify({"error": "Invalid phone number or password"}), 401
             
-            user_id, stored_password = result
+            user_id = result
 
             
             # Fetch user data (e.g., points and QR code)
