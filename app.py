@@ -4,6 +4,8 @@ import secrets
 import qrcode
 from io import BytesIO
 import base64
+import json  # Ensure you import json for data serialization
+
 
 
 app = Flask(__name__)
@@ -44,8 +46,9 @@ def register_user():
     conn.commit()
     cur.close()
     conn.close()
+ user_id = cur.fetchone()[0]
 
-   # Format data for QR code
+    # Format data for QR code
     qr_data = {
         "user_id": user_id,
         "phone": phone,
@@ -66,12 +69,22 @@ def register_user():
     qr.make(fit=True)
     img = qr.make_image(fill='black', back_color='white')
 
-    # Convert QR code image to base64 for easy embedding in JSON response
+    # Convert QR code image to base64
     buffered = BytesIO()
     img.save(buffered, format="PNG")
     qr_code_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
-    
+
+    # Store QR code in the database
+    cur.execute(
+        "UPDATE users SET qr_code = %s WHERE id = %s",
+        (qr_code_base64, user_id)
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+
     return jsonify({"user_id": user_id, "qr_code": f"data:image/png;base64,{qr_code_base64}"}), 201
+
 
 @app.route('/add_points/<int:user_id>', methods=['POST'])
 def add_points(user_id):
@@ -150,7 +163,8 @@ def create_tables():
       email VARCHAR(100),
       password VARCHAR(255) NOT NULL,
       points INTEGER DEFAULT 0,
-      marketing_opt_in BOOLEAN DEFAULT FALSE
+      marketing_opt_in BOOLEAN DEFAULT FALSE,
+      qr_code TEXT,
     );
     """
     
