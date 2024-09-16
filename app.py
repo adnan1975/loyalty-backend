@@ -118,6 +118,7 @@ def create_tables():
       phone VARCHAR(20) UNIQUE NOT NULL,
       email VARCHAR(100),
       password VARCHAR(255) NOT NULL,
+      points INTEGER DEFAULT 0,
       marketing_opt_in BOOLEAN DEFAULT FALSE
     );
     """
