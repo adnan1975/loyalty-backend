@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import psycopg2
 
+
 app = Flask(__name__)
 
 # Database connection parameters
@@ -16,21 +17,26 @@ def get_db_connection():
     conn = psycopg2.connect(**DB_PARAMS)
     return conn
 
+const crypto = require('crypto');
+    
 @app.route('/register', methods=['POST'])
 def register_user():
     data = request.json
     name = data.get('name')
     phone = data.get('phone')
     email = data.get('email')
+    const placeholderPassword = crypto.randomBytes(16).toString('hex');  // 32-character random password
+
 
     if not name or not phone:
         return jsonify({"error": "Name and phone number are required"}), 400
 
+
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO users (name, phone, email, points) VALUES (%s, %s, %s, %s) RETURNING id",
-        (name, phone, email, 0)
+        "INSERT INTO users (name, phone, email, points, password) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+        (name, phone, email, 0, placeholderPassword)
     )
     user_id = cur.fetchone()[0]
     conn.commit()
