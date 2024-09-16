@@ -94,5 +94,61 @@ def health_check():
     except Exception as e:
         return jsonify({"status": "unhealthy", "error": str(e)}), 500
 
+
+
+def drop_all_tables():
+    drop_qrcodes_table = "DROP TABLE IF EXISTS qrcodes;"
+    drop_users_table = "DROP TABLE IF EXISTS users;"
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    cur.execute(drop_qrcodes_table)
+    cur.execute(drop_users_table)
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def create_tables():
+    create_users_table = """
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(100),
+      phone VARCHAR(20) UNIQUE NOT NULL,
+      email VARCHAR(100),
+      password VARCHAR(255) NOT NULL,
+      marketing_opt_in BOOLEAN DEFAULT FALSE
+    );
+    """
+    
+    create_qrcodes_table = """
+    CREATE TABLE IF NOT EXISTS qrcodes (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      qr_code_data TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    cur.execute(create_users_table)
+    cur.execute(create_qrcodes_table)
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+
+@app.route('/reset-database', methods=['POST'])
+def reset_database():
+    try:
+        drop_all_tables()
+        create_tables()
+        return jsonify({"message": "Database reset successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)
