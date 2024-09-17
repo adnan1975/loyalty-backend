@@ -307,12 +307,23 @@ def login_user():
 def get_offers():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM offers")
+
+    # Query to fetch points_required and description fields from offers table
+    cur.execute("SELECT points_required, description FROM offers")
     offers = cur.fetchall()
+
     cur.close()
     conn.close()
-    return jsonify(offers)
 
+    # Transform the result into an array of JSON objects
+    offers_list = []
+    for offer in offers:
+        offers_list.append({
+            "points_required": offer[0],  # Assuming first column is points_required
+            "description": offer[1]       # Assuming second column is description
+        })
+
+    return jsonify(offers_list)
 
 if __name__ == '__main__':
     app.run(debug=True)
