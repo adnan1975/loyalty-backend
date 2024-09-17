@@ -188,13 +188,21 @@ def create_tables():
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """
+    create_offers_table = """
+    CREATE TABLE IF NOT EXISTS offers (
+    id SERIAL PRIMARY KEY,
+    description VARCHAR(255),
+    points_required INT
+    );
+    """
     
     conn = get_db_connection()
     cur = conn.cursor()
     
     cur.execute(create_users_table)
     cur.execute(create_qrcodes_table)
-    
+    cur.execute(create_offers_table)
+    cur.execute("INSERT INTO offers (description, points_required) VALUES ('Free coffee', 100)")
     conn.commit()
     cur.close()
     conn.close()
@@ -294,6 +302,17 @@ def login_user():
 
     token = generate_token(user_id)
     return jsonify({'token': token}), 200
+
+@app.route('/api/offers', methods=['GET'])
+def get_offers():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM offers")
+    offers = cur.fetchall()
+    cur.close()
+    conn.close()
+    return jsonify(offers)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
