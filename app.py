@@ -8,12 +8,14 @@ import json  # Ensure you import json for data serialization
 import jwt
 import os
 import datetime
+from flask_cors import CORS
 
 
 
 app = Flask(__name__)
 SECRET_KEY = os.getenv('SECRET_KEY', 'your_secret_key')
 
+CORS(app, origins="*")  # Allow all origins
 
 # Database connection parameters
 DB_PARAMS = {
