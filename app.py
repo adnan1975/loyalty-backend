@@ -303,7 +303,7 @@ def login_user():
     token = generate_token(user_id)
     return jsonify({'token': token}), 200
 
-@app.route('/api/offers', methods=['GET'])
+@app.route('/offers', methods=['GET'])
 def get_offers():
     conn = get_db_connection()
     cur = conn.cursor()
